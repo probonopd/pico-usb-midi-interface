@@ -31,11 +31,12 @@ jobs:
           git submodule update --init
 
       - name: Build firmware for ${{ matrix.board }}
+        env:
+          PICO_SDK_PATH: /opt/pico-sdk
         run: |
           mkdir build-${{ matrix.board }}
           cd build-${{ matrix.board }}
           cmake .. \
-            -DPICO_SDK_PATH=/opt/pico-sdk \
             -DPICO_BOARD=${{ matrix.board }} \
             -G Ninja
           ninja
