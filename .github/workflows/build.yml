@@ -47,6 +47,4 @@ jobs:
           name: pico-usb-midi-interface-${{ matrix.board }}
           path: |
             build-${{ matrix.board }}/pico-usb-midi-interface.uf2
-            build-${{ matrix.board }}/pico-usb-midi-interface.elf
-            build-${{ matrix.board }}/pico-usb-midi-interface.hex
           if-no-files-found: error
