@@ -1,0 +1,52 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        board: [pico, pico2]
+
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake gcc-arm-none-eabi libnewlib-arm-none-eabi \
+            libstdc++-arm-none-eabi-newlib python3 git ninja-build
+
+      - name: Clone pico-sdk
+        run: |
+          git clone --depth 1 --branch 2.1.1 \
+            https://github.com/raspberrypi/pico-sdk.git /opt/pico-sdk
+          cd /opt/pico-sdk
+          git submodule update --init
+
+      - name: Build firmware for ${{ matrix.board }}
+        env:
+          PICO_SDK_PATH: /opt/pico-sdk
+        run: |
+          mkdir build-${{ matrix.board }}
+          cd build-${{ matrix.board }}
+          cmake .. \
+            -DPICO_BOARD=${{ matrix.board }} \
+            -G Ninja
+          ninja
+
+      - name: Upload firmware artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pico-usb-midi-interface-${{ matrix.board }}
+          path: |
+            build-${{ matrix.board }}/pico-usb-midi-interface.uf2
+            build-${{ matrix.board }}/pico-usb-midi-interface.elf
+            build-${{ matrix.board }}/pico-usb-midi-interface.hex
+          if-no-files-found: error
